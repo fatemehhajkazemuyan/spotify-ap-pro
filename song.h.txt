@@ -1,0 +1,44 @@
+#ifndef SONG_H
+#define SONG_H
+
+#include <string>
+
+using namespace std;
+
+class Song {
+private:
+    int id;
+    string name;
+    int releaseYear;
+    string genre;
+    string audioFilePath;
+    int artistId;
+    int albumId;
+
+public:
+    Song(int _id, string _name, int _releaseYear, string _genre, string _audioFilePath, int _artistId, int _albumId = 0) {
+        id = _id;
+        name = _name;
+        releaseYear = _releaseYear;
+        genre = _genre;
+        audioFilePath = _audioFilePath;
+        artistId = _artistId;
+        albumId = _albumId;
+    }
+
+    int getId() { return id; }
+    string getName() { return name; }
+    int getReleaseYear() { return releaseYear; }
+    string getGenre() { return genre; }
+    string getAudioFilePath() { return audioFilePath; }
+    int getArtistId() { return artistId; }
+    int getAlbumId() { return albumId; }
+
+    void setName(string newName) { name = newName; }
+    void setReleaseYear(int year) { releaseYear = year; }
+    void setGenre(string newGenre) { genre = newGenre; }
+    void setAudioFilePath(string path) { audioFilePath = path; }
+    void setAlbumId(int newAlbumId) { albumId = newAlbumId; }
+};
+
+#endif // SONG_H

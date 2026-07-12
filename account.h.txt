@@ -1,0 +1,43 @@
+#ifndef ACCOUNT_H
+#define ACCOUNT_H
+
+#include <string>
+using namespace std;
+
+enum class UserRole {
+    Artist,
+    Listener
+};
+
+class Account {
+private:
+    int id;
+    string fullName;
+    string userName;
+    string password;
+    string biography;
+    UserRole role;
+
+public:
+    Account(int _id, string _fullName, string _userName, string _password, string _biography, UserRole _role) {
+        id = _id;
+        fullName = _fullName;
+        userName = _userName;
+        password = _password;
+        biography = _biography;
+        role = _role;
+    }
+
+    int getId() { return id; }
+    string getFullName() { return fullName; }
+    string getUserName() { return userName; }
+    string getPassword() { return password; }
+    string getBiography() { return biography; }
+    UserRole getRole() { return role; }
+
+    void setFullName(string name) { fullName = name; }
+    void setPassword(string pass) { password = pass; }
+    void setBiography(string bio) { biography = bio; }
+};
+
+#endif // ACCOUNT_H
