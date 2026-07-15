@@ -2,7 +2,7 @@ QT       += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-CONFIG += c++11
+CONFIG += c++17
 
 # The following define makes your compiler emit warnings if you use
 # any Qt feature that has been marked deprecated (the exact warnings
@@ -17,19 +17,32 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
     Account.cpp \
+    accountrepository.cpp \
     album.cpp \
+    albumrepository.cpp \
+    artistrepository.cpp \
+    listenerrepository.cpp \
     main.cpp \
     mainwindow.cpp \
     playlist.cpp \
+    playlistrepository.cpp \
     song.cpp \
+    songrepository.cpp \
     spotifymanager.cpp
 
 HEADERS += \
     Account.h \
+    abstractrepository.h \
+    accountrepository.h \
     album.h \
+    albumrepository.h \
+    artistrepository.h \
+    listenerrepository.h \
     mainwindow.h \
     playlist.h \
+    playlistrepository.h \
     song.h \
+    songrepository.h \
     spotifymanager.h
     mainwindow.h \
 

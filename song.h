@@ -13,23 +13,33 @@ private:
     string genre;
     string filePath;
     int artistId;
+    int albumId;
 
 public:
-    Song(int _id, string _name, int _releaseYear, string _genre, string _filePath, int _artistId) {
+
+    Song(int _id, string _name, int _releaseYear, string _genre, string _filePath, int _artistId, int _albumId = 0) {
         id = _id;
         name = _name;
         releaseYear = _releaseYear;
         genre = _genre;
         filePath = _filePath;
         artistId = _artistId;
+        albumId = _albumId;
     }
 
-    int getId() { return id; }
-    string getName() { return name; }
-    int getReleaseYear() { return releaseYear; }
-    string getGenre() { return genre; }
-    string getFilePath() { return filePath; }
-    int getArtistId() { return artistId; }
+
+    int getId() const { return id; }
+    string getName() const { return name; }
+    int getReleaseYear() const { return releaseYear; }
+    string getGenre() const { return genre; }
+    string getFilePath() const { return filePath; }
+    int getArtistId() const { return artistId; }
+    int getAlbumId() const { return albumId; }
+
+    void setName(string newName) { name = newName; }
+    void setGenre(string newGenre) { genre = newGenre; }
+    void setAlbumId(int newAlbumId) { albumId = newAlbumId; }
+    void setReleaseYear(int newYear) { releaseYear = newYear; }
 };
 
 #endif // SONG_H

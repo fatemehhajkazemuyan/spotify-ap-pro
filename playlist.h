@@ -20,10 +20,10 @@ public:
         creatorId = _creatorId;
     }
 
-    int getId() { return id; }
-    string getName() { return name; }
-    int getCreatorId() { return creatorId; }
-    vector<int> getSongIds() { return songIds; }
+    int getId() const { return id; }
+    string getName() const { return name; }
+    int getCreatorId() const { return creatorId; }
+    vector<int> getSongIds() const { return songIds; }
 
     void setName(string newName) { name = newName; }
 
@@ -32,9 +32,9 @@ public:
     }
 
     void removeSong(int songId) {
-        for (auto it = songIds.begin(); it != songIds.end(); ++it) {
-            if (*it == songId) {
-                songIds.erase(it);
+        for (size_t i = 0; i < songIds.size(); i++) {
+            if (songIds[i] == songId) {
+                songIds.erase(songIds.begin() + i);
                 break;
             }
         }

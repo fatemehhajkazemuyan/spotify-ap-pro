@@ -2,59 +2,94 @@
 #define SPOTIFYMANAGER_H
 
 #include <vector>
-#include "Account.h"
-#include "song.h"
-#include "album.h"
-#include "playlist.h"
+#include <memory>
+#include <string>
+#include <stdexcept>
+#include "songrepository.h"
+#include "albumrepository.h"
+#include "playlistrepository.h"
+#include "artistrepository.h"
+#include "listenerrepository.h"
 
 using namespace std;
 
 class SpotifyManager {
 private:
-    vector<Account> users;
-    vector<Song> songs;
-    vector<Album> albums;
-    vector<Playlist> playlists;
-    int currentUserIndex; // ذخیره ایندکس کاربری که الان لاگین کرده (-1 یعنی هیچکس)
+    shared_ptr<SongRepository> songRepo;
+    shared_ptr<AlbumRepository> albumRepo;
+    shared_ptr<PlaylistRepository> playlistRepo;
+    shared_ptr<ArtistRepository> artistRepo;
+    shared_ptr<ListenerRepository> listenerRepo;
+    // کاربری که الانلاگین کرده (وارد برنامه شده) را اینجا ذخیره می‌کنیم.
+    shared_ptr<Account> currentAccount;
 
 public:
     SpotifyManager() {
-        currentUserIndex = -1; // در ابتدا هیچ کاربری وارد نشده
+        songRepo = make_shared<SongRepository>();
+        albumRepo = make_shared<AlbumRepository>();
+        playlistRepo = make_shared<PlaylistRepository>();
+        artistRepo = make_shared<ArtistRepository>();
+        listenerRepo = make_shared<ListenerRepository>();
+        currentAccount = nullptr;
+    }
+    void registerUser(int id, string username, string password, string name, string role, string biography = "") {
+        // ۱. بررسی اینکه نام کاربری تکراری نباش (هم هنرمند هم شنونده)
+        if (artistRepo->searchByUserName(username) != nullptr || listenerRepo->searchByUserName(username) != nullptr) {
+            throw runtime_error("نام کاربری قبلاً انتخاب شده است");
+        }
+        // ۲. ساخت اکانت بر اساس نقش کاربر
+        if (role == "Artist") {
+            auto newArtist = make_shared<Account>(id, username, password, name, role, biography);
+            artistRepo->save(newArtist);
+        }
+        else if (role == "Listener") {
+            auto newListener = make_shared<Account>(id, username, password, name, role, biography);
+            listenerRepo->save(newListener);
+            auto favPlaylist = make_shared<Playlist>(id + 100000, "Favorites", id);
+            playlistRepo->save(favPlaylist);
+        }
+        else {
+            throw runtime_error("نقش درسستی وارد نشد");
+        }
     }
 
-    // متدهای مدیریت کاربران (ثبت نام و ورود)
-    bool registerUser(int id, string username, string password, string name, string role) {
-        // ابتدا چک میکنیم نام کاربری تکراری نباشد
-        for (auto &user : users) {
-            if (user.getUsername() == username) {
-                return false; // ثبت نام ناموفق به خاطر نام کاربری تکراری
-            }
+    void loginUser(string username, string password) {
+        shared_ptr<Account> account = nullptr;
+        account = artistRepo->searchByUserName(username);
+        if (account == nullptr) {
+            account = listenerRepo->searchByUserName(username);
         }
-        users.push_back(Account(id, username, password, name, role));
-        return true; // ثبت نام موفق
-    }
-
-    bool loginUser(string username, string password) {
-        for (size_t i = 0; i < users.size(); ++i) {
-            if (users[i].getUsername() == username && users[i].getPassword() == password) {
-                currentUserIndex = i; // کاربر پیدا شد و لاگین کرد
-                return true;
-            }
+        if (account == nullptr) {
+            throw runtime_error("کاربری با این نام کاربری یافت نشد!");
         }
-        return false; // نام کاربری یا رمز اشتباه بود
+        if (account->getPassword() != password) {
+            throw runtime_error("رمز عبور اشتباه است!");
+        }
+        currentAccount = account;
     }
 
     void logoutUser() {
-        currentUserIndex = -1;
+        currentAccount = nullptr;
     }
+//گتر ها برای بخش گرافیگی
 
-    // متدهای مدیریت آهنگ‌ها
-    void addSongToSystem(int id, string name, int year, string genre, string path, int artistId) {
-        songs.push_back(Song(id, name, year, genre, path, artistId));
-    }
+    shared_ptr<Account> getCurrentAccount() const { return currentAccount; }
+    shared_ptr<SongRepository> getSongRepo() const { return songRepo; }
+    shared_ptr<AlbumRepository> getAlbumRepo() const { return albumRepo; }
+    shared_ptr<PlaylistRepository> getPlaylistRepo() const { return playlistRepo; }
+    shared_ptr<ArtistRepository> getArtistRepo() const { return artistRepo; }
+    shared_ptr<ListenerRepository> getListenerRepo() const { return listenerRepo; }
 
-    vector<Song> getAllSongs() {
-        return songs;
+
+
+    void deleteSongGlobally(int songId) {
+        //  حذف آهنگ باید آن را از کل سامانه، آلبوم‌ها و لیست‌های پخش حذف کند!
+
+        // ۱. حذف از مخزن اصلیآهنگ‌ها
+        songRepo->remove(songId);
+
+        // ۲. حذف از تمام آلبوم‌های موجود
+        // (چون تابع getAll نداریم، در لایه گرافیک یا با متدهای کمکی هندل می‌شود، اما پایه کار حذف از سورس است)
     }
 };
 
