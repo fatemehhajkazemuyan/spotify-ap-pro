@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>LoginDialog</class>
+ <widget class="QDialog" name="LoginDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1292</width>
+    <height>600</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Dialog</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">QDialog {
+    background-color: #FAFAFA; /* پس‌زمینه سفید بسیار ملایم و شیک */
+}
+
+QLineEdit {
+    background-color: #FFFFFF; /* داخل کادرهای متنی کاملاً سفید */
+    color: #4A4A4A;             /* رنگ متن تایپ شده خاکستری تیره */
+    border: 1.5px solid #FFB7B2; /* کادر دور صورتی ملایم */
+    border-radius: 8px;        /* گوشه‌های نرم و گرد */
+    padding: 6px;
+}
+
+QLineEdit:focus {
+    border: 1.5px solid #FF85A1; /* وقتی کاربر روی کادر کلیک می‌کند، صورتی پررنگ‌تر شود */
+}
+
+QPushButton {
+    background-color: #FF85A1; /* رنگ صورتی جذاب برای دکمه‌ها */
+    color: white;              /* متن سفید روی دکمه */
+    font-weight: bold;         /* متن ضخیم */
+    border-radius: 12px;       /* گوشه‌های دکمه کاملاً گرد و مدرن */
+    padding: 7px;
+}
+
+QPushButton:hover {
+    background-color: #FF6B8B; /* وقتی موس روی دکمه می‌رود، کمی صورتی پررنگ‌تر شود */
+}
+
+QLabel {
+    color: #4A4A4A;            /* رنگ متن نوشته‌ها خاکستری تیره مایل به مشکی */
+    font-weight: bold;
+}</string>
+  </property>
+  <widget class="QLabel" name="label">
+   <property name="geometry">
+    <rect>
+     <x>540</x>
+     <y>50</y>
+     <width>121</width>
+     <height>41</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>SPOTIFY MUSIC.</string>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="usernameLineEdit">
+   <property name="geometry">
+    <rect>
+     <x>540</x>
+     <y>100</y>
+     <width>113</width>
+     <height>25</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="passwordLineEdit">
+   <property name="geometry">
+    <rect>
+     <x>540</x>
+     <y>140</y>
+     <width>113</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <property name="echoMode">
+    <enum>QLineEdit::Password</enum>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="loginButton">
+   <property name="geometry">
+    <rect>
+     <x>610</x>
+     <y>190</y>
+     <width>112</width>
+     <height>34</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Log In.</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="registerButton">
+   <property name="geometry">
+    <rect>
+     <x>470</x>
+     <y>190</y>
+     <width>112</width>
+     <height>34</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Register</string>
+   </property>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
