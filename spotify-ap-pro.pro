@@ -22,10 +22,12 @@ SOURCES += \
     albumrepository.cpp \
     artistrepository.cpp \
     listenerrepository.cpp \
+    logindialog.cpp \
     main.cpp \
     mainwindow.cpp \
     playlist.cpp \
     playlistrepository.cpp \
+    registerdialog.cpp \
     song.cpp \
     songrepository.cpp \
     spotifymanager.cpp
@@ -38,16 +40,20 @@ HEADERS += \
     albumrepository.h \
     artistrepository.h \
     listenerrepository.h \
+    logindialog.h \
     mainwindow.h \
     playlist.h \
     playlistrepository.h \
+    registerdialog.h \
     song.h \
     songrepository.h \
     spotifymanager.h
     mainwindow.h \
 
 FORMS += \
-    mainwindow.ui
+    logindialog.ui \
+    mainwindow.ui \
+    registerdialog.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

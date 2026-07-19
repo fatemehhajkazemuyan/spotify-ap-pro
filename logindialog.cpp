@@ -1,11 +1,13 @@
 #include "logindialog.h"
 #include "ui_logindialog.h"
-#include <QMessageBox>     // برای نشان دادن پیغام‌های کوچک هشدار یا خطا به کاربر
-#include "SpotifyManager.h" // کلاس اصلی برنامه‌ات که کارهای ورود و ثبت‌نام را مدیریت می‌کند
+#include <QMessageBox>
+#include "spotifymanager.h"
+#include "registerdialog.h"
 
-LoginDialog::LoginDialog(QWidget *parent) :
+LoginDialog::LoginDialog(QWidget *parent, SpotifyManager *manager) :
     QDialog(parent),
-    ui(new Ui::LoginDialog)
+    ui(new Ui::LoginDialog),
+    db(manager) // کلاسِ پاس داده شده را اینجا ذخیره می‌کنیم
 {
     ui->setupUi(this);
 }
@@ -24,55 +26,30 @@ void LoginDialog::on_loginButton_clicked()
     // ۲. بررسی ساده برای اینکه فیلدها خالی نباشند
     if (username.isEmpty() || password.isEmpty()) {
         QMessageBox::warning(this, "خطا", "لطفاً نام کاربری و رمز عبور را وارد کنید!");
-        return; // اجرای تابع را متوقف کن تا بقیه کدها اجرا نشوند
-    }
-
-    // ۳. بررسی ورود کاربر با استفاده از try-catch (دقیقاً طبق داکیومنت پروژه)
-    try {
-        SpotifyManager manager; // یک نمونه موقت برای تست کدهایمان
-
-        // چند اکانت تستی به صورت فرضی می‌سازیم تا بتوانیم کارکرد را تست کنیم
-        manager.registerUser(1, "ali", "1234", "علی", "Listener");
-        manager.registerUser(2, "reza", "5678", "رضا", "Artist", "بیوگرافی هنرمند");
-
-        // تلاش برای ورود
-        manager.loginUser(username.toStdString(), password.toStdString());
-
-        // اگر بدون خطا وارد شود، یعنی یوزرنیم و پسورد درست بوده است:
-        QMessageBox::information(this, "موفقیت", "خوش آمدید!");
-        this->accept(); // بستن پنجره ورود و بازگشت با موفقیت
-
-    } catch (const std::exception& e) {
-        // اگر خطایی رخ دهد (مثلاً یوزرنیم نبود یا پسورد اشتباه بود)، پیام خطا نشان داده می‌شود
-        QMessageBox::critical(this, "خطای ورود", QString::fromStdString(e.what()));
-    }
-}
-void LoginDialog::on_registerButton_clicked()
-{
-    // ۱. خواندن یوزرنیم و پسورد وارد شده توسط کاربر
-    // (اگر در مرحله قبل اسم فیلدها را تغییر ندادی، به جای usernameLineEdit از lineEdit استفاده کن)
-    QString username = ui->usernameLineEdit->text();
-    QString password = ui->passwordLineEdit->text();
-
-    // ۲. بررسی اینکه فیلدها خالی نباشند
-    if (username.isEmpty() || password.isEmpty()) {
-        QMessageBox::warning(this, "خطا", "لطفاً برای ثبت‌نام، نام کاربری و رمز عبور را وارد کنید!");
         return;
     }
 
-    // ۳. تلاش برای ثبت‌نام کاربر جدید
+    // ۳. بررسی ورود کاربر با استفاده از try-catch
     try {
-        SpotifyManager manager;
+        // ❌ خط SpotifyManager manager; پاک شد تا از نمونه اصلی استفاده شود
 
-        // کاربر را به عنوان شنونده (Listener) با یک آی‌دی ساده ثبت‌نام می‌کنیم
-        // متدهای کلاس خودت را صدا می‌زنیم:
-        manager.registerUser(3, username.toStdString(), password.toStdString(), username.toStdString(), "Listener");
+        // تلاش برای ورود با استفاده از اشاره‌گر db
+        db->loginUser(username.toStdString(), password.toStdString());
 
-        // نشان دادن پیغام موفقیت به کاربر
-        QMessageBox::information(this, "ثبت‌نام موفق", "اکانت شما با موفقیت ساخته شد!\nحالا می‌توانید وارد شوید.");
+        // اگر بدون خطا وارد شود، یعنی یوزرنیم و پسورد درست بوده است:
+        QMessageBox::information(this, "موفقیت", "خوش آمدید!");
+        this->accept();
 
     } catch (const std::exception& e) {
-        // اگر نام کاربری تکراری باشد یا خطایی رخ دهد، اینجا پیام خطا نشان داده می‌شود
-        QMessageBox::critical(this, "خطای ثبت‌نام", QString::fromStdString(e.what()));
+        QMessageBox::critical(this, "خطای ورود", QString::fromStdString(e.what()));
     }
+}
+
+void LoginDialog::on_registerButton_clicked()
+{
+    // ساختن نمونه از پنجره ثبت‌نام و پاس دادن دیتابیس مشترک (&*db یا همان db)
+    RegisterDialog registerWin(this, db);
+
+    // نمایش پنجره ثبت‌نام به صورت مدال (تا زمانی که این پنجره باز است کاربر به صفحه لاگین دسترسی ندارد)
+    registerWin.exec();
 }
