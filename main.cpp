@@ -1,4 +1,3 @@
-#include "mainwindow.h"
 #include "logindialog.h"
 #include "spotifymanager.h"
 #include <QApplication>
@@ -7,18 +6,11 @@ int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
 
-    // ۱. یک نمونه مشترک و واحد از مدیریت کاربران می‌سازیم
-    SpotifyManager mainManager;
+    SpotifyManager manager;
 
-    // ۲. آدرس این نمونه مشترک (&mainManager) را به پنجره لاگین می‌دهیم
-    LoginDialog login(nullptr, &mainManager);
+    // در ابتدا فقط صفحه لاگین باز می‌شود
+    LoginDialog loginDialog(nullptr, &manager);
+    loginDialog.show();
 
-    if (login.exec() == QDialog::Accepted) {
-        // ۳. در آینده می‌توانیم همین mainManager را به MainWindow هم بدهیم تا آهنگ‌ها را برای همین کاربر لود کند!
-        MainWindow w;
-        w.show();
-        return a.exec();
-    }
-
-    return 0;
+    return a.exec();
 }

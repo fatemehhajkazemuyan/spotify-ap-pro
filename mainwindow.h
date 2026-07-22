@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include "spotifymanager.h"
+#include <QListWidgetItem>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -28,6 +29,13 @@ private slots:
     void onEditPlaylistClicked();
     void onDeletePlaylistClicked();
     void onLogoutClicked();
+    void onCreateAlbumClicked();
+    void onEditProfileClicked();
+    void onAlbumItemDoubleClicked(QListWidgetItem *item);
+    void on_playlistsListWidget_itemClicked(QListWidgetItem *item);
+    void onSearchClicked();
+       void onSortClicked();
+       void onDeleteAccountClicked();
 };
 
 #endif // MAINWINDOW_H

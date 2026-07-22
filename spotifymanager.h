@@ -5,9 +5,10 @@
 #include <memory>
 #include <string>
 #include <stdexcept>
-#include <fstream>   // حتماً سی‌پلاس‌پلاس استاندارد برای فایل
-#include <sstream>   // حتماً سی‌پلاس‌پلاس استاندارد برای رشته
+#include <fstream>
+#include <sstream>
 
+#include "song.h"
 #include "songrepository.h"
 #include "albumrepository.h"
 #include "playlistrepository.h"
@@ -25,7 +26,7 @@ private:
     shared_ptr<ListenerRepository> listenerRepo;
     shared_ptr<Account> currentAccount;
 
-    // 💡 متد کاملاً استاندارد سی‌پلاس‌پلاسی برای حذف کاراکترهای مخفی و نامرئی انتهای خطوط ویندوز
+    // متد پاکسازی کاراکترهای مخفی ویندوز
     void cleanString(string &s) {
         s.erase(s.find_last_not_of(" \n\r\t") + 1);
     }
@@ -62,7 +63,6 @@ public:
             throw runtime_error("نقش درستی وارد نشد");
         }
 
-        // 📝 نوشتن در فایل متنی دقیقاً در پوشه پروژه (برای امنیت دسترسی ویندوز)
         ofstream file("users_spotify.txt", ios::app);
         if (file.is_open()) {
             file << id << ","
@@ -76,8 +76,6 @@ public:
     }
 
     void loadUsersFromFile() {
-        // 📖 خواندن با ifstream استاندارد
-        // دقیقاً همان آدرس بالا را اینجا هم بگذارید
         ifstream file("D:/users_spotify.txt");
         if (!file.is_open()) return;
 
@@ -88,15 +86,13 @@ public:
             stringstream ss(line);
             string idStr, username, password, name, role, biography;
 
-            // تفکیک دقیق خطوط بر اساس کاما
             getline(ss, idStr, ',');
             getline(ss, username, ',');
             getline(ss, password, ',');
             getline(ss, name, ',');
             getline(ss, role, ',');
-            getline(ss, biography); // فیلد آخر خط
+            getline(ss, biography);
 
-            // پاکسازی ۱۰۰٪ فیلدها از کاراکترهای مخفی ویندوز
             if (!idStr.empty()) cleanString(idStr);
             if (!username.empty()) cleanString(username);
             if (!password.empty()) cleanString(password);
@@ -108,7 +104,6 @@ public:
                 int id = stoi(idStr);
                 if (biography == "none") biography = "";
 
-                // حالا چون رشته "Listener" کاملاً تمیز است، شرطِ ریپازیتوری برقرار شده و کاربر لود می‌شود
                 if (role == "Artist") {
                     auto newArtist = make_shared<Account>(id, username, password, name, role, biography);
                     artistRepo->save(newArtist);
@@ -120,8 +115,7 @@ public:
                     auto favPlaylist = make_shared<Playlist>(id + 100000, "Favorites", id);
                     playlistRepo->save(favPlaylist);
                 }
-            }
-        }
+            }}
         file.close();
     }
 
@@ -142,6 +136,31 @@ public:
 
     void logoutUser() {
         currentAccount = nullptr;
+    }
+
+    // متد جدید برای افزودن آهنگ توسط هنرمند (داخل کلاس)
+    bool addSongByArtist(int currentArtistId, string name, int releaseYear, string genre, string filePath, int albumId = 0) {
+        // ۱. تولید آیدی یکتا برای آهنگ جدید
+        int newSongId = songRepo->getAll().size() + 1;
+
+        // ۲. ساخت آهنگ با ورودی‌های دقیق کلاس Song
+        auto newSong = make_shared<Song>(newSongId, name, releaseYear, genre, filePath, currentArtistId, albumId);
+
+        // ۳. ذخیره در ریپازیتوری آهنگ‌ها
+        songRepo->save(newSong);
+
+        // ۴. اگر آلبوم انتخاب شده بود، اضافه کردن آهنگ به آلبوم
+        if (albumId != 0) {
+            auto albums = albumRepo->getAll();
+            for (auto& album : albums) {
+                if (album->getId() == albumId) {
+                    album->addSong(newSongId);
+                    break;
+                }
+            }
+        }
+
+        return true;
     }
 
     shared_ptr<Account> getCurrentAccount() const { return currentAccount; }

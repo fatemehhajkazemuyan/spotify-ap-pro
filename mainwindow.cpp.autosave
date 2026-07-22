@@ -65,10 +65,7 @@ void MainWindow::loadUserPanel()
         "   color: #333333 !important;"
         "   padding: 5px !important;"
         "}";
-
-    // -------------------------------------------------------------
-        // ۱. تنظیمات لیست بر اساس نقش با مشخصات کامل (سال و سبک)
-        // -------------------------------------------------------------
+    
         if (role == "Listener") {
             if (ui->welcomeLabel != nullptr) {
                 ui->welcomeLabel->setText("👤 Welcome back, " + name + "!");
@@ -97,9 +94,6 @@ void MainWindow::loadUserPanel()
                 ui->playlistsListWidget->addItem("💿  Encore (2004 - HipHop)");
             }
         }
-    // -------------------------------------------------------------
-    // ۲. آیکون‌های لایه پایین (مشترک + اختصاصی)
-    // -------------------------------------------------------------
     if (ui->createPlaylistButton != nullptr) {
         ui->createPlaylistButton->setText(role == "Artist" ? "🎵" : "➕");
         ui->createPlaylistButton->setStyleSheet(flatIconStyle);
@@ -113,7 +107,7 @@ void MainWindow::loadUserPanel()
         ui->deletePlaylistButton->setStyleSheet(flatIconStyle);
     }
 
-    // اضافه کردن آیکون‌های قابلیت‌های مشترک (فقط یک‌بار ساخته می‌شوند)
+    // اضافه کردن آیکون‌های قابلیت‌های مشترک 
     static bool buttonsCreated = false;
     if (!buttonsCreated && ui->horizontalLayout_2 != nullptr) {
 
@@ -155,9 +149,8 @@ void MainWindow::loadUserPanel()
         buttonsCreated = true;
     }
 }
-#include <QInputDialog>
 
-// تابع کلیک روی به علاوه (ایجاد لیست پخش / آلبوم / آهنگ)
+// تابع کلیک روی به علاوه (ایجاد لیست پخش / البوم / اهنگ)
 void MainWindow::onCreatePlaylistClicked()
 {
     // دریافت نقش کاربر لاگین شده
@@ -170,7 +163,7 @@ void MainWindow::onCreatePlaylistClicked()
     }
 
     if (role == "Artist") {
-        // --- دریافت مشخصات کامل آهنگ از هنرمند ---
+        // دریافت مشخصات کامل آهنگ از هنرمند
         bool ok;
 
         // ۱. نام آهنگ
@@ -202,7 +195,7 @@ void MainWindow::onCreatePlaylistClicked()
         QMessageBox::information(this, "موفقیت", "آهنگ با مشخصات کامل ایجاد شد!");
     }
     else {
-        // --- بخش ایجاد پلی‌لیست ساده برای Listener ---
+        //بخش ایجاد پلی‌لیست ساده برای Listener
         bool ok;
         QString playlistName = QInputDialog::getText(this, "Create Playlist", "Enter playlist name:", QLineEdit::Normal, "", &ok);
 
@@ -294,12 +287,12 @@ void MainWindow::onLogoutClicked()
 void MainWindow::onCreateAlbumClicked()
 {
     bool ok;
-    QString albumName = QInputDialog::getText(this, "ایجاد آلبوم جدید",
-                                             "نام آلبوم جدید را وارد کنید:",
+    QString albumName = QInputDialog::getText(this, "ایجاد البوم جدید",
+                                             "نام البوم جدید را وارد کنید:",
                                              QLineEdit::Normal, "", &ok);
 
     if (ok && !albumName.trimmed().isEmpty()) {
-        // اضافه کردن آلبوم جدید با آیکون دیسک به لیست
+        // اضافه کردن البوم جدید با ایکون دیسک به لیست
         if (ui->playlistsListWidget != nullptr) {
             ui->playlistsListWidget->addItem("💿  " + albumName.trimmed());
         }
@@ -330,14 +323,14 @@ void MainWindow::onEditProfileClicked()
         // تغییر نام در اکانت فعلی
         currentAccount->setName(newName.toStdString());
 
-        // به‌روزرسانی لیبل خوشامدگویی
+        // به‌روزرسانی لیبل خوش امدگویی
         if (ui->welcomeLabel != nullptr) {
             ui->welcomeLabel->setText("👤 Welcome back, " + newName.trimmed() + "!");
         }
 
         // به‌روزرسانی عنوان پنجره
         this->setWindowTitle("Spotify Manager - " + newName.trimmed());
-        // تغییر رمز عبور (اختیاری)
+        // تغییر رمز عبور
                 QString newPass = QInputDialog::getText(this, "ویرایش رمز عبور",
                                                         "رمز عبور جدید را وارد کنید:",
                                                         QLineEdit::Password, "", &ok);
@@ -402,7 +395,7 @@ void MainWindow::onAlbumItemDoubleClicked(QListWidgetItem *item)
         }
     }
 }
-// تابع کلیک معمولی روی آیتم‌ها (جهت مدیریت گزینه بازگشت)
+// تابع کلیک معمولی روی ایتم‌ها (جهت مدیریت گزینه بازگشت)
 void MainWindow::on_playlistsListWidget_itemClicked(QListWidgetItem *item)
 {
     if (item == nullptr) return;
@@ -412,7 +405,7 @@ void MainWindow::on_playlistsListWidget_itemClicked(QListWidgetItem *item)
         loadUserPanel(); // دوباره صفحه و لیست اصلی بارگذاری می‌شود
     }
 }
-// 🔍 ۱. جستجو و فیلتر
+//  جستجو و فیلتر
 void MainWindow::onSearchClicked()
 {
     QStringList options;
@@ -468,19 +461,14 @@ void MainWindow::onSearchClicked()
     }
 }
 
-// 🔀 ۲. مرتب‌سازی
+//  مرتب‌سازی
 void MainWindow::onSortClicked()
 {
     QStringList options;
-    options << "نام (A to Z)"
-            << "نام (Z to A)"
-            << "سال انتشار (از جدید به قدیم)"
-            << "سال انتشار (از قدیم به جدید)";
+    options << "نام (A to Z)"<< "نام (Z to A)"<< "سال انتشار (از جدید به قدیم)"<< "سال انتشار (از قدیم به جدید)";
 
     bool ok;
-    QString choice = QInputDialog::getItem(this, "مرتب‌سازی",
-                                           "نحوه مرتب‌سازی لیست را انتخاب کنید:",
-                                           options, 0, false, &ok);
+    QString choice = QInputDialog::getItem(this, "مرتب‌سازی","نحوه مرتب‌سازی لیست را انتخاب کنید:",options, 0, false, &ok);
 
     if (!ok) return;
 
@@ -519,13 +507,11 @@ void MainWindow::onSortClicked()
     QMessageBox::information(this, "موفقیت", "مرتب‌سازی با موفقیت انجام شد!");
 }
 
-// ⚠️ ۴. حذف حساب کاربری
+// حذف حساب کاربری
 void MainWindow::onDeleteAccountClicked()
 {
     QMessageBox::StandardButton reply;
-    reply = QMessageBox::warning(this, "حذف حساب کاربری",
-                                 "آیا اطمینان دارید که می‌خواهید حساب کاربری خود را به طور کامل حذف کنید؟\nاین عملیات غیرقابل بازگشت است!",
-                                 QMessageBox::Yes | QMessageBox::No);
+    reply = QMessageBox::warning(this, "حذف حساب کاربری","آیا اطمینان دارید که می‌خواهید حساب کاربری خود را به طور کامل حذف کنید؟\nاین عملیات غیرقابل بازگشت است!",QMessageBox::Yes | QMessageBox::No);
 
     if (reply == QMessageBox::Yes) {
         // حذف اکانت جاری از دیتابیس (در صورت وجود متد deleteAccount)
