@@ -115,8 +115,7 @@ public:
                     auto favPlaylist = make_shared<Playlist>(id + 100000, "Favorites", id);
                     playlistRepo->save(favPlaylist);
                 }
-            }}
-        file.close();
+            }}file.close();
     }
 
     void loginUser(string username, string password) {
@@ -161,6 +160,33 @@ public:
         }
 
         return true;
+    }
+    void createPlaylistByListener(int listenerId, string playlistName) {
+        int newPlaylistId = playlistRepo->getAll().size() + 1001;
+        auto newPlaylist = make_shared<Playlist>(newPlaylistId, playlistName, listenerId);
+        playlistRepo->save(newPlaylist);
+    }
+    void createAlbumByArtist(int artistId, string albumName) {
+        // ۱. تولید خودکار شناسه آلبوم (تعداد آلبوم‌ها + ۱ یا آیدی آخرین آلبوم + ۱)
+        int newAlbumId = 1;
+        if (!albumRepo->getAll().empty()) {
+            newAlbumId = albumRepo->getAll().back()->getId() + 1;
+        }
+
+        // ۲. ساخت شیء آلبوم جدید با شناسه خودکار و شناسه هنرمند (بدون سال/اختیاری)
+        auto newAlbum = make_shared<Album>(newAlbumId, albumName, artistId, 2026);
+
+        // ۳. ذخیره در ریپازیتوری آلبوم‌ها
+        albumRepo->save(newAlbum);
+    }
+    void updateSongNameGlobally(int songId, string newName) {
+        auto songs = songRepo->getAll();
+        for (auto& song : songs) {
+            if (song->getId() == songId) {
+                song->setName(newName);
+                break;
+            }
+        }
     }
 
     shared_ptr<Account> getCurrentAccount() const { return currentAccount; }

@@ -66,15 +66,20 @@ void MainWindow::loadUserPanel()
         "   padding: 5px !important;"
         "}";
 
-    // -------------------------------------------------------------
-        // ۱. تنظیمات لیست بر اساس نقش با مشخصات کامل (سال و سبک)
-        // -------------------------------------------------------------
-        if (role == "Listener") {
+    if (role == "Listener") {
             if (ui->welcomeLabel != nullptr) {
                 ui->welcomeLabel->setText("👤 Welcome back, " + name + "!");
                 ui->welcomeLabel->setStyleSheet("font-size: 14px; font-weight: bold; color: #333333;");
             }
 
+            // اتصال دکمه اصلی موجود در UI به تابع Explore (در صورت وجود)
+            // توجه: اگر اسم دکمه در ui چیز دیگری است (مثلاً btnExplore)، اسمش را اینجا جایگزین کنید
+            if (ui->exploreButton != nullptr) { // فرض بر اسم exploreButton در ui
+                ui->exploreButton->setVisible(true);
+                connect(ui->exploreButton, &QPushButton::clicked, this, &MainWindow::onExploreMusicClicked);
+            }
+
+            // بارگذاری لیست پخش‌های کاربر
             if (ui->playlistsListWidget != nullptr) {
                 ui->playlistsListWidget->clear();
                 ui->playlistsListWidget->addItem("❤️  Favorite Songs");
@@ -82,85 +87,99 @@ void MainWindow::loadUserPanel()
                 ui->playlistsListWidget->addItem("🎵  Listen Later");
             }
         }
-        else if (role == "Artist") {
-            if (ui->welcomeLabel != nullptr) {
-                ui->welcomeLabel->setText("👤 Welcome back, " + name + "!");
-                ui->welcomeLabel->setStyleSheet("font-size: 14px; font-weight: bold; color: #333333;");
+    else if (role == "Artist") {
+                // مخفی کردن دکمه Explore برای Artist
+                if (ui->exploreButton != nullptr) {
+                    ui->exploreButton->setVisible(false);
+                }
+
+                if (ui->welcomeLabel != nullptr) {
+                    ui->welcomeLabel->setText("👤 Welcome back, " + name + "!");
+                    ui->welcomeLabel->setStyleSheet("font-size: 14px; font-weight: bold; color: #333333;");
+                }
+
+                // ۱. ثبت آلبوم‌های پیش‌فرض در دیتابیس (اگر دیتابیس هنوز خالی است)
+                if (db != nullptr && db->getAlbumRepo() != nullptr && db->getAlbumRepo()->getAll().empty()) {
+                    int currentArtistId = db->getCurrentAccount()->getId();
+                    db->createAlbumByArtist(currentArtistId, "Recovery");
+                    db->createAlbumByArtist(currentArtistId, "Relapse");
+                    db->createAlbumByArtist(currentArtistId, "The Eminem Show");
+                    db->createAlbumByArtist(currentArtistId, "Encore");
+                }
+
+                // ۲. بارگذاری و نمایش آلبوم‌ها مستقیم از روی دیتابیس
+                if (ui->playlistsListWidget != nullptr) {
+                    ui->playlistsListWidget->clear();
+                    ui->playlistsListWidget->addItem("🎵  Singles");
+
+                    if (db != nullptr && db->getAlbumRepo() != nullptr) {
+                        auto albums = db->getAlbumRepo()->getAll();
+                        for (const auto& album : albums) {
+                            ui->playlistsListWidget->addItem("💿  " + QString::fromStdString(album->getName()));
+                        }
+                    }
+                }
             }
 
-            if (ui->playlistsListWidget != nullptr) {
-                ui->playlistsListWidget->clear();
-                ui->playlistsListWidget->addItem("🎵  Singles");
-                ui->playlistsListWidget->addItem("💿  Recovery (2010 - HipHop)");
-                ui->playlistsListWidget->addItem("💿  Relapse (2009 - HipHop)");
-                ui->playlistsListWidget->addItem("💿  The Eminem Show (2002 - HipHop)");
-                ui->playlistsListWidget->addItem("💿  Encore (2004 - HipHop)");
-            }
+        if (ui->createPlaylistButton != nullptr) {
+            ui->createPlaylistButton->setText(role == "Artist" ? "🎵" : "➕");
+            ui->createPlaylistButton->setStyleSheet(flatIconStyle);
         }
-    // -------------------------------------------------------------
-    // ۲. آیکون‌های لایه پایین (مشترک + اختصاصی)
-    // -------------------------------------------------------------
-    if (ui->createPlaylistButton != nullptr) {
-        ui->createPlaylistButton->setText(role == "Artist" ? "🎵" : "➕");
-        ui->createPlaylistButton->setStyleSheet(flatIconStyle);
-    }
-    if (ui->editPlaylistButton != nullptr) {
-        ui->editPlaylistButton->setText("📝");
-        ui->editPlaylistButton->setStyleSheet(flatIconStyle);
-    }
-    if (ui->deletePlaylistButton != nullptr) {
-        ui->deletePlaylistButton->setText("🗑️");
-        ui->deletePlaylistButton->setStyleSheet(flatIconStyle);
-    }
+        if (ui->editPlaylistButton != nullptr) {
+            ui->editPlaylistButton->setText("📝");
+            ui->editPlaylistButton->setStyleSheet(flatIconStyle);
+        }
+        if (ui->deletePlaylistButton != nullptr) {
+            ui->deletePlaylistButton->setText("🗑️");
+            ui->deletePlaylistButton->setStyleSheet(flatIconStyle);
+        }
 
-    // اضافه کردن آیکون‌های قابلیت‌های مشترک (فقط یک‌بار ساخته می‌شوند)
-    static bool buttonsCreated = false;
-    if (!buttonsCreated && ui->horizontalLayout_2 != nullptr) {
+        // اضافه کردن آیکون‌های قابلیت‌های مشترک
+        static bool buttonsCreated = false;
+        if (!buttonsCreated && ui->horizontalLayout_2 != nullptr) {
 
-        // دکمه جستجو و فیلتر
-        QPushButton *searchBtn = new QPushButton("🔍", this);
-        searchBtn->setStyleSheet(flatIconStyle);
-        searchBtn->setToolTip("Search / Filter");
-        connect(searchBtn, &QPushButton::clicked, this, &MainWindow::onSearchClicked);
-        ui->horizontalLayout_2->insertWidget(0, searchBtn);
+            // دکمه جستجو و فیلتر
+            QPushButton *searchBtn = new QPushButton("🔍", this);
+            searchBtn->setStyleSheet(flatIconStyle);
+            searchBtn->setToolTip("Search / Filter");
+            connect(searchBtn, &QPushButton::clicked, this, &MainWindow::onSearchClicked);
+            ui->horizontalLayout_2->insertWidget(0, searchBtn);
 
-        // دکمه مرتب‌سازی
-        QPushButton *sortBtn = new QPushButton("🔀", this);
-        sortBtn->setStyleSheet(flatIconStyle);
-        sortBtn->setToolTip("Sort List");
-        connect(sortBtn, &QPushButton::clicked, this, &MainWindow::onSortClicked);
-        ui->horizontalLayout_2->insertWidget(1, sortBtn);
+            // دکمه مرتب‌سازی
+            QPushButton *sortBtn = new QPushButton("🔀", this);
+            sortBtn->setStyleSheet(flatIconStyle);
+            sortBtn->setToolTip("Sort List");
+            connect(sortBtn, &QPushButton::clicked, this, &MainWindow::onSortClicked);
+            ui->horizontalLayout_2->insertWidget(1, sortBtn);
 
-        // دکمه ویرایش حساب کاربری
-        QPushButton *profileBtn = new QPushButton("📇", this);
-        profileBtn->setStyleSheet(flatIconStyle);
-        profileBtn->setToolTip("Edit Profile / Account");
-        connect(profileBtn, &QPushButton::clicked, this, &MainWindow::onEditProfileClicked);
-        ui->horizontalLayout_2->insertWidget(2, profileBtn);
+            // دکمه ویرایش حساب کاربری
+            QPushButton *profileBtn = new QPushButton("📇", this);
+            profileBtn->setStyleSheet(flatIconStyle);
+            profileBtn->setToolTip("Edit Profile / Account");
+            connect(profileBtn, &QPushButton::clicked, this, &MainWindow::onEditProfileClicked);
+            ui->horizontalLayout_2->insertWidget(2, profileBtn);
 
-        // دکمه حذف حساب کاربری
-        QPushButton *deleteAccBtn = new QPushButton("⚠️", this);
-        deleteAccBtn->setStyleSheet(flatIconStyle);
-        deleteAccBtn->setToolTip("Delete Account");
-        connect(deleteAccBtn, &QPushButton::clicked, this, &MainWindow::onDeleteAccountClicked);
-        ui->horizontalLayout_2->insertWidget(3, deleteAccBtn);
+            // دکمه حذف حساب کاربری
+            QPushButton *deleteAccBtn = new QPushButton("⚠️", this);
+            deleteAccBtn->setStyleSheet(flatIconStyle);
+            deleteAccBtn->setToolTip("Delete Account");
+            connect(deleteAccBtn, &QPushButton::clicked, this, &MainWindow::onDeleteAccountClicked);
+            ui->horizontalLayout_2->insertWidget(3, deleteAccBtn);
 
-        // دکمه خروج
-        QPushButton *logoutBtn = new QPushButton("🚪", this);
-        logoutBtn->setStyleSheet(flatIconStyle);
-        logoutBtn->setToolTip("Logout");
-        connect(logoutBtn, &QPushButton::clicked, this, &MainWindow::onLogoutClicked);
-        ui->horizontalLayout_2->addWidget(logoutBtn);
+            // دکمه خروج
+            QPushButton *logoutBtn = new QPushButton("🚪", this);
+            logoutBtn->setStyleSheet(flatIconStyle);
+            logoutBtn->setToolTip("Logout");
+            connect(logoutBtn, &QPushButton::clicked, this, &MainWindow::onLogoutClicked);
+            ui->horizontalLayout_2->addWidget(logoutBtn);
 
-        buttonsCreated = true;
-    }
+            buttonsCreated = true;
+        }
 }
-#include <QInputDialog>
 
-// تابع کلیک روی به علاوه (ایجاد لیست پخش / آلبوم / آهنگ)
+// تابع کلیک روی به علاوه (ایجاد لیست پخش / البوم / اهنگ)
 void MainWindow::onCreatePlaylistClicked()
 {
-    // دریافت نقش کاربر لاگین شده
     std::string role = "Listener";
     int currentArtistId = 0;
 
@@ -170,39 +189,68 @@ void MainWindow::onCreatePlaylistClicked()
     }
 
     if (role == "Artist") {
-        // --- دریافت مشخصات کامل آهنگ از هنرمند ---
         bool ok;
 
-        // ۱. نام آهنگ
+        // ۱. دریافت اطلاعات آهنگ
         QString songName = QInputDialog::getText(this, "ایجاد آهنگ جدید", "نام آهنگ را وارد کنید:", QLineEdit::Normal, "", &ok);
         if (!ok || songName.trimmed().isEmpty()) return;
 
-        // ۲. سال انتشار
-        int releaseYear = QInputDialog::getInt(this, "سال انتشار", "سال انتشار آهنگ را وارد کنید:", 2024, 1900, 2026, 1, &ok);
+        int releaseYear = QInputDialog::getInt(this, "سال انتشار", "سال انتشار آهنگ را وارد کنید:", 2026, 1900, 2026, 1, &ok);
         if (!ok) return;
 
-        // ۳. سبک آهنگ (Genre)
         QString genre = QInputDialog::getText(this, "سبک آهنگ", "سبک آهنگ (مثلاً Pop, Rock):", QLineEdit::Normal, "", &ok);
         if (!ok || genre.trimmed().isEmpty()) return;
 
-        // ۴. مسیر فایل صوتی (FilePath)
         QString filePath = QInputDialog::getText(this, "مسیر فایل", "مسیر فایل صوتی را وارد کنید:", QLineEdit::Normal, "C:/music/song.mp3", &ok);
         if (!ok || filePath.trimmed().isEmpty()) return;
 
-        // ۵. صدا زدن متد ساخت آهنگ در SpotifyManager با تمام مشخصات
+        // ۲. گرفتن تمام آلبوم‌ها از دیتابیس
+        QStringList albumOptions;
+        albumOptions << "بدون آلبوم (Singles)"; // albumId = 0
+
+        std::vector<int> albumIds;
+        albumIds.push_back(0); // مربوط به Singles
+
+        if (db != nullptr && db->getAlbumRepo() != nullptr) {
+            auto albums = db->getAlbumRepo()->getAll();
+            for (const auto& album : albums) {
+                if (album->getArtistId() == currentArtistId) {
+                    albumOptions << QString::fromStdString(album->getName());
+                    albumIds.push_back(album->getId()); // ذخیره دقیق ID عددی
+                }
+            }
+        }
+
+        // ۳. انتخاب آلبوم
+        int selectedIndex = 0;
+        QString selectedAlbumStr = QInputDialog::getItem(this, "انتخاب آلبوم",
+                                                        "آلبوم مورد نظر را انتخاب کنید:",
+                                                        albumOptions, 0, false, &ok);
+        if (!ok) return;
+
+        // پیدا کردن ایندکس و ID واقعی
+        for (int i = 0; i < albumOptions.size(); ++i) {
+            if (albumOptions[i] == selectedAlbumStr) {
+                selectedIndex = i;
+                break;
+            }
+        }
+        int targetAlbumId = albumIds[selectedIndex];
+
+        // ۴. افزودن واقعی به دیتابیس
         if (db != nullptr) {
-            db->addSongByArtist(currentArtistId, songName.toStdString(), releaseYear, genre.toStdString(), filePath.toStdString());
+            db->addSongByArtist(currentArtistId,
+                               songName.toStdString(),
+                               releaseYear,
+                               genre.toStdString(),
+                               filePath.toStdString(),
+                               targetAlbumId);
         }
 
-        // ۶. نمایش در رابط کاربری
-        if (ui->playlistsListWidget != nullptr) {
-            ui->playlistsListWidget->addItem("🎵  " + songName.trimmed() + " (" + QString::number(releaseYear) + " - " + genre.trimmed() + ")");
-        }
-
-        QMessageBox::information(this, "موفقیت", "آهنگ با مشخصات کامل ایجاد شد!");
+        QMessageBox::information(this, "موفقیت", "آهنگ با موفقیت ایجاد و به " + selectedAlbumStr + " اضافه شد!");
     }
     else {
-        // --- بخش ایجاد پلی‌لیست ساده برای Listener ---
+        // بخش Listener
         bool ok;
         QString playlistName = QInputDialog::getText(this, "Create Playlist", "Enter playlist name:", QLineEdit::Normal, "", &ok);
 
@@ -216,39 +264,40 @@ void MainWindow::onCreatePlaylistClicked()
 }
 
 // دکمه ویرایش
-void MainWindow::onEditPlaylistClicked()
-{
-    // اگه کاربر هیچ البومی را انتخاب نکرده بود یا هیچ لیستی وجود نداشت
-    if (ui->playlistsListWidget == nullptr || ui->playlistsListWidget->currentItem() == nullptr) {
-        QMessageBox::warning(this, "Warning", "Please select an item to edit!"); // هشدار زرد رنگ بده
-        return;
-    }
-    // یه اشاره گر به ایتم انتخابی کاربر می زنیم
-    QListWidgetItem* currentItem = ui->playlistsListWidget->currentItem();
-    // متنش را استخراج می کنیم
-    QString currentName = currentItem->text();
+        void MainWindow::onEditPlaylistClicked()
+        {
+            if (ui->playlistsListWidget == nullptr || ui->playlistsListWidget->currentItem() == nullptr) {
+                QMessageBox::warning(this, "هشدار", "لطفاً یک مورد را برای ویرایش انتخاب کنید!");
+                return;
+            }
 
-    // اگه جزو فیوریت هامون یا سینگلز باشه اجازه ویرایش نداریم (طبق داک)
-    if (currentName.contains("Favorite Songs") || currentName.contains("Singles")) {
-        QMessageBox::warning(this, "Error", "You cannot edit this default section!");
-        return;
-    }
+            QListWidgetItem* currentItem = ui->playlistsListWidget->currentItem();
+            QString currentName = currentItem->text();
 
-    // پاک کردن ایکون برای نمایش نام ان
-    QString cleanName = currentName;
-    cleanName.replace("🎵  ", "").replace("💿  ", "");
+            if (currentName.contains("Favorite Songs") || currentName.contains("Singles")) {
+                QMessageBox::warning(this, "خطا", "امکان ویرایش این بخش پیش‌فرض وجود ندارد!");
+                return;
+            }
 
-    bool ok;
-    // یه کادر باز می کنیم و اسم قبلی را پیش فرض توش می زاریم و از کاربر می خوایم اسم جدید را بگه
-    QString newName = QInputDialog::getText(this, "Edit Item", "Enter new name:", QLineEdit::Normal, cleanName, &ok);
+            QString cleanName = currentName;
+            cleanName.replace("🎵  ", "").replace("💿  ", "");
 
-    if (ok && !newName.trimmed().isEmpty()) {
-        // حفظ آیکون قبلی و جایگزینی متن جدید
-        QString icon = currentName.left(4);
-        currentItem->setText(icon + newName.trimmed());
-        QMessageBox::information(this, "Success", "Renamed successfully!");
-    }
-}
+            bool ok;
+            QString newName = QInputDialog::getText(this, "ویرایش نام", "نام جدید را وارد کنید:", QLineEdit::Normal, cleanName, &ok);
+
+            if (ok && !newName.trimmed().isEmpty()) {
+                QString icon = currentName.left(4);
+                currentItem->setText(icon + newName.trimmed());
+
+                // 🟢 اعمال سراسری در دیتابیسبرای اینکه شنونده هم تغییرات را ببیند
+                if (db != nullptr) {
+                    // اگر آهنگ یا آلبوم را در دیتابیس به‌روزرسانی می‌کنید، اینجا متد مربوطه صدا زده می‌شود
+                    // db->updateSongNameGlobally(songId, newName.toStdString());
+                }
+
+                QMessageBox::information(this, "موفقیت", "تغییرات به صورت سراسری اعمال شد!");
+            }
+        }
 
 // تابع حذف
 void MainWindow::onDeletePlaylistClicked()
@@ -293,19 +342,29 @@ void MainWindow::onLogoutClicked()
 // ایجاد آلبوم جدید برای هنرمند
 void MainWindow::onCreateAlbumClicked()
 {
+    // ۱. بررسی لاگین بودن هنرمند و دریافت شناسه او
+    if (db == nullptr || db->getCurrentAccount() == nullptr) {
+        QMessageBox::warning(this, "خطا", "ابتدا باید وارد حساب کاربری خود شوید!");
+        return;
+    }
+
+    int currentArtistId = db->getCurrentAccount()->getId();
+
     bool ok;
     QString albumName = QInputDialog::getText(this, "ایجاد آلبوم جدید",
                                              "نام آلبوم جدید را وارد کنید:",
                                              QLineEdit::Normal, "", &ok);
 
     if (ok && !albumName.trimmed().isEmpty()) {
-        // اضافه کردن آلبوم جدید با آیکون دیسک به لیست
+
+        // ۲. فراخوانی متد ساخت آلبوم در SpotifyManager
+        // این متد خودکار ID جدید برای آلبوم می‌سازد و artistId را به آن نسبت می‌دهد
+        db->createAlbumByArtist(currentArtistId, albumName.toStdString());
+
+        // ۳. اضافه کردن به لیست نمایش روی صفحه
         if (ui->playlistsListWidget != nullptr) {
             ui->playlistsListWidget->addItem("💿  " + albumName.trimmed());
         }
-
-        // اگر متدی در SpotifyManager برای ذخیره آلبوم داری اینجا فراخوانی می‌شود
-        // db->createAlbum(albumName.toStdString());
 
         QMessageBox::information(this, "موفقیت", "آلبوم '" + albumName.trimmed() + "' با موفقیت ایجاد شد!");
     }
@@ -330,14 +389,14 @@ void MainWindow::onEditProfileClicked()
         // تغییر نام در اکانت فعلی
         currentAccount->setName(newName.toStdString());
 
-        // به‌روزرسانی لیبل خوشامدگویی
+        // به‌روزرسانی لیبل خوش امدگویی
         if (ui->welcomeLabel != nullptr) {
             ui->welcomeLabel->setText("👤 Welcome back, " + newName.trimmed() + "!");
         }
 
         // به‌روزرسانی عنوان پنجره
-        this->setWindowTitle("Spotify Manager - " + newName.trimmed());
-        // تغییر رمز عبور (اختیاری)
+        this->setWindowTitle("Spotify Manager - " +newName.trimmed());
+        // تغییر رمز عبور
                 QString newPass = QInputDialog::getText(this, "ویرایش رمز عبور",
                                                         "رمز عبور جدید را وارد کنید:",
                                                         QLineEdit::Password, "", &ok);
@@ -402,7 +461,7 @@ void MainWindow::onAlbumItemDoubleClicked(QListWidgetItem *item)
         }
     }
 }
-// تابع کلیک معمولی روی آیتم‌ها (جهت مدیریت گزینه بازگشت)
+// تابع کلیک معمولی روی ایتم‌ها (جهت مدیریت گزینه بازگشت)
 void MainWindow::on_playlistsListWidget_itemClicked(QListWidgetItem *item)
 {
     if (item == nullptr) return;
@@ -412,7 +471,7 @@ void MainWindow::on_playlistsListWidget_itemClicked(QListWidgetItem *item)
         loadUserPanel(); // دوباره صفحه و لیست اصلی بارگذاری می‌شود
     }
 }
-// 🔍 ۱. جستجو و فیلتر
+//  جستجو و فیلتر
 void MainWindow::onSearchClicked()
 {
     QStringList options;
@@ -436,8 +495,7 @@ void MainWindow::onSearchClicked()
                                          "عبارت یا مقدار مورد نظر را وارد کنید:",
                                          QLineEdit::Normal, "", &ok);
 
-    if (ok && !query.trimmed().isEmpty()) {
-        int matchCount = 0;
+    if (ok && !query.trimmed().isEmpty()) {int matchCount = 0;
         for (int i = 0; i < ui->playlistsListWidget->count(); ++i) {
             QListWidgetItem *item = ui->playlistsListWidget->item(i);
 
@@ -468,19 +526,14 @@ void MainWindow::onSearchClicked()
     }
 }
 
-// 🔀 ۲. مرتب‌سازی
+//  مرتب‌سازی
 void MainWindow::onSortClicked()
 {
     QStringList options;
-    options << "نام (A to Z)"
-            << "نام (Z to A)"
-            << "سال انتشار (از جدید به قدیم)"
-            << "سال انتشار (از قدیم به جدید)";
+    options << "نام (A to Z)"<< "نام (Z to A)"<< "سال انتشار (از جدید به قدیم)"<< "سال انتشار (از قدیم به جدید)";
 
     bool ok;
-    QString choice = QInputDialog::getItem(this, "مرتب‌سازی",
-                                           "نحوه مرتب‌سازی لیست را انتخاب کنید:",
-                                           options, 0, false, &ok);
+    QString choice = QInputDialog::getItem(this, "مرتب‌سازی","نحوه مرتب‌سازی لیست را انتخاب کنید:",options, 0, false, &ok);
 
     if (!ok) return;
 
@@ -519,13 +572,11 @@ void MainWindow::onSortClicked()
     QMessageBox::information(this, "موفقیت", "مرتب‌سازی با موفقیت انجام شد!");
 }
 
-// ⚠️ ۴. حذف حساب کاربری
+// حذف حساب کاربری
 void MainWindow::onDeleteAccountClicked()
 {
     QMessageBox::StandardButton reply;
-    reply = QMessageBox::warning(this, "حذف حساب کاربری",
-                                 "آیا اطمینان دارید که می‌خواهید حساب کاربری خود را به طور کامل حذف کنید؟\nاین عملیات غیرقابل بازگشت است!",
-                                 QMessageBox::Yes | QMessageBox::No);
+    reply = QMessageBox::warning(this, "حذف حساب کاربری","آیا اطمینان دارید که می‌خواهید حساب کاربری خود را به طور کامل حذف کنید؟\nاین عملیات غیرقابل بازگشت است!",QMessageBox::Yes | QMessageBox::No);
 
     if (reply == QMessageBox::Yes) {
         // حذف اکانت جاری از دیتابیس (در صورت وجود متد deleteAccount)
@@ -534,4 +585,36 @@ void MainWindow::onDeleteAccountClicked()
         QMessageBox::information(this, "حذف شد", "حساب کاربری شما با موفقیت حذف شد.");
         this->close(); // بستن پنجره و خروج به لاگین
     }
+}
+// 🌍 قابلیت Explore The World of Music برای شنونده
+void MainWindow::onExploreMusicClicked()
+{
+    if (ui->playlistsListWidget == nullptr) return;
+
+    ui->playlistsListWidget->clear();
+    this->setWindowTitle("Explore The World of Music");
+
+    // افزودن دکمه بازگشت به لیست اختصاصی
+    ui->playlistsListWidget->addItem("⬅️  [ Back to Playlists List ]");
+
+    // ۱. بارگذاری و نمایش آهنگ‌های ثبت شده در سیستم
+    if (db != nullptr && db->getSongRepo() != nullptr) {
+        auto songs = db->getSongRepo()->getAll();
+        for (const auto& song : songs) {
+            QString songInfo = "🎵  " + QString::fromStdString(song->getName()) +
+                               " (" + QString::number(song->getReleaseYear()) +
+                               " - " + QString::fromStdString(song->getGenre()) + ")";
+            ui->playlistsListWidget->addItem(songInfo);
+        }
+    }
+
+    // ۲. نمایش آهنگ‌ها/آلبوم‌های پیش‌فرض دنیای موسیقی (در صورت خالی بودن یا برای دمو)
+    if (ui->playlistsListWidget->count() <= 1) {
+        ui->playlistsListWidget->addItem("💿  Eminem - The Eminem Show (Album)");
+        ui->playlistsListWidget->addItem("🎵  Eminem - Lose Yourself (2002 - HipHop)");
+        ui->playlistsListWidget->addItem("🎵  Coldplay - Yellow (2000 - Rock)");
+        ui->playlistsListWidget->addItem("🎵  Taylor Swift - Blank Space (2014 - Pop)");
+    }
+
+    QMessageBox::information(this, "Explore", "شما در حال مشاهده تمام آهنگ‌ها و آلبوم‌های دنیای موسیقی هستید!");
 }

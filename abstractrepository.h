@@ -13,11 +13,9 @@ protected:
 
 public:
     virtual ~AbstractRepository() = default;
-
-    // توابع مجازی خالص دانشجویی و ساده
     virtual int save(shared_ptr<T> entity) = 0;
     virtual bool remove(int id) = 0;
-    virtual shared_ptr<T> search(int id) const = 0; // خروجی ساده شد!
+    virtual shared_ptr<T> search(int id) const = 0;
 
     const vector<shared_ptr<T>>& getAll() const {
         return entities;

@@ -36,6 +36,7 @@ private slots:
     void onSearchClicked();
        void onSortClicked();
        void onDeleteAccountClicked();
+       void onExploreMusicClicked();
 };
 
 #endif // MAINWINDOW_H
